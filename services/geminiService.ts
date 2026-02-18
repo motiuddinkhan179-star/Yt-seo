@@ -2,32 +2,25 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 /**
- * Technical implementation of the Cloud Engine.
- * Must instantiate inside functions to capture user-selected API Keys.
- */
-const getAI = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-};
-
-/**
- * Cleans markdown formatting from AI responses for stable JSON parsing.
+ * Robust JSON cleaner to handle markdown-wrapped responses
  */
 const parseCloudJSON = (text: string) => {
   try {
     const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleaned);
   } catch (e) {
-    console.error("Cloud AI: JSON Corruption Detected", e);
+    console.error("Cloud AI: JSON Parse Failure", e);
     return {};
   }
 };
 
 /**
- * Master Execution Cluster with Automatic Fallback.
- * Ensures tools don't fail if one model tier is restricted.
+ * Master Execution Cluster with late instantiation for Vercel/Cloud compatibility.
+ * This ensures process.env.API_KEY is read AFTER the user selects their key.
  */
 async function cloudExecute(params: any) {
-  const ai = getAI();
+  // Always instantiate new client inside the call
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   
   try {
     // Attempt Pro Cluster (Master reasoning)
@@ -36,9 +29,18 @@ async function cloudExecute(params: any) {
       model: 'gemini-3-pro-preview'
     });
   } catch (error: any) {
-    console.warn("Pro Cluster rejected. Diverting to high-speed Flash Cluster...");
+    console.warn("Pro Cluster rejected. Diverting to high-speed Flash Cluster...", error);
+    
+    // Check for common permission/not found errors to reset key state if needed
+    const errorMsg = error?.message || "";
+    if (errorMsg.includes("not found") || errorMsg.includes("403")) {
+      console.error("Key Error: Please re-authenticate in Admin panel.");
+    }
+
     try {
-      return await ai.models.generateContent({
+      // Re-instantiate for fallback to be safe
+      const fallbackAi = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+      return await fallbackAi.models.generateContent({
         ...params,
         model: 'gemini-3-flash-preview'
       });

@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../store';
 import { NAV_ITEMS } from '../constants';
 import { AppRoute } from '../types';
-import { Moon, Sun, Bell, ShieldCheck } from 'lucide-react';
+import { Moon, Sun, Bell, ShieldCheck, Cloud, CloudOff } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,7 +13,22 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, activeRoute, onNavigate }) => {
   const { isDarkMode, toggleDarkMode, notifications } = useApp();
+  const [isCloudActive, setIsCloudActive] = useState(false);
   const unreadCount = notifications.length;
+
+  useEffect(() => {
+    const checkCloud = async () => {
+      try {
+        const active = await (window as any).aistudio?.hasSelectedApiKey();
+        setIsCloudActive(!!active);
+      } catch (e) {
+        setIsCloudActive(false);
+      }
+    };
+    checkCloud();
+    const interval = setInterval(checkCloud, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen max-w-lg mx-auto bg-gray-50 dark:bg-[#0a0a0a] text-zinc-900 dark:text-zinc-100 shadow-2xl relative">
@@ -26,10 +41,16 @@ const Layout: React.FC<LayoutProps> = ({ children, activeRoute, onNavigate }) =>
           <span className="font-extrabold text-xl tracking-tight">Tube<span className="text-red-600">Pro</span></span>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          {/* Cloud Indicator */}
+          <div className={`p-2.5 rounded-2xl border transition-all ${isCloudActive ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800 text-indigo-600' : 'bg-zinc-100 dark:bg-zinc-900 border-transparent dark:border-zinc-800 text-zinc-400'}`}>
+            {isCloudActive ? <Cloud size={18} /> : <CloudOff size={18} />}
+          </div>
+
           <button onClick={toggleDarkMode} className="p-2.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all active:scale-90 border border-transparent dark:border-zinc-800">
             {isDarkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} className="text-zinc-500" />}
           </button>
+          
           <button onClick={() => onNavigate(AppRoute.NOTIFICATIONS)} className="p-2.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-transparent dark:border-zinc-800 relative transition-all active:scale-90">
             <Bell size={20} className="text-zinc-600 dark:text-zinc-400" />
             {unreadCount > 0 && (
@@ -38,6 +59,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeRoute, onNavigate }) =>
               </span>
             )}
           </button>
+
           <button onClick={() => onNavigate(AppRoute.ADMIN)} className="p-2.5 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-transparent dark:border-zinc-800 transition-all active:scale-90">
             <ShieldCheck size={20} className={activeRoute === AppRoute.ADMIN ? 'text-red-600' : 'text-zinc-600 dark:text-zinc-400'} />
           </button>
