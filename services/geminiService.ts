@@ -1,64 +1,57 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
+/**
+ * Technical implementation of the Cloud Engine.
+ * Must instantiate inside functions to capture user-selected API Keys.
+ */
 const getAI = () => {
-  const customKey = localStorage.getItem('custom_gemini_key');
-  const apiKey = customKey || process.env.API_KEY;
-  if (!apiKey) {
-    console.error("Cloud AI: API Key missing in environment.");
-  }
-  return new GoogleGenAI({ apiKey: apiKey as string });
+  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 };
 
 /**
- * Robust JSON cleaner to handle markdown-wrapped responses
+ * Cleans markdown formatting from AI responses for stable JSON parsing.
  */
 const parseCloudJSON = (text: string) => {
   try {
     const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
     return JSON.parse(cleaned);
   } catch (e) {
-    console.error("Cloud AI: JSON Parse Failure", e);
+    console.error("Cloud AI: JSON Corruption Detected", e);
     return {};
   }
 };
 
 /**
- * Optimized Cloud Execution with automatic cluster switching
+ * Master Execution Cluster with Automatic Fallback.
+ * Ensures tools don't fail if one model tier is restricted.
  */
 async function cloudExecute(params: any) {
   const ai = getAI();
-  const hasCustomKey = !!localStorage.getItem('custom_gemini_key');
-  
-  // Use Flash by default for maximum compatibility, Pro only if custom key exists or as fallback
-  const primaryModel = hasCustomKey ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
   
   try {
+    // Attempt Pro Cluster (Master reasoning)
     return await ai.models.generateContent({
       ...params,
-      model: primaryModel
+      model: 'gemini-3-pro-preview'
     });
   } catch (error: any) {
-    const errorStr = JSON.stringify(error).toLowerCase();
-    if (errorStr.includes("403") || errorStr.includes("permission") || errorStr.includes("not found")) {
-      console.warn("Cloud AI: Switching to High-Availability Flash Cluster...");
+    console.warn("Pro Cluster rejected. Diverting to high-speed Flash Cluster...");
+    try {
       return await ai.models.generateContent({
         ...params,
         model: 'gemini-3-flash-preview'
       });
+    } catch (innerError: any) {
+      console.error("Critical Neural Link Failure", innerError);
+      throw innerError;
     }
-    throw error;
   }
 }
 
 export const generateSEO = async (topic: string) => {
   const response = await cloudExecute({
-    contents: `As a Master Cloud AI SEO Expert, generate a full high-end SEO package for a YouTube video about: "${topic}". 
-    1. Provide 15 highly optimized long-tail tags.
-    2. Provide 10 viral trending hashtags.
-    3. Calculate a precise algorithmic difficulty score (1-100).
-    4. List 5 high-level growth strategies.
-    Return JSON only.`,
+    contents: `YouTube SEO Optimization for: "${topic}". Return JSON: tags (array), hashtags (array), score (number), suggestions (array).`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -77,7 +70,7 @@ export const generateSEO = async (topic: string) => {
 
 export const generateTitles = async (topic: string) => {
   const response = await cloudExecute({
-    contents: `Generate 10 high-CTR viral YouTube titles for "${topic}". Return as JSON array of strings.`,
+    contents: `Generate 10 viral YouTube titles for "${topic}". Return JSON array.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -88,7 +81,7 @@ export const generateTitles = async (topic: string) => {
 
 export const generateScript = async (topic: string, format: string) => {
   const response = await cloudExecute({
-    contents: `Write a high-retention script for a YouTube ${format} about: "${topic}". Format as JSON.`,
+    contents: `Full Retention Script for YouTube ${format} about: "${topic}". Return JSON: hook, script, outline.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -106,7 +99,7 @@ export const generateScript = async (topic: string, format: string) => {
 
 export const generateHashtags = async (topic: string) => {
   const response = await cloudExecute({
-    contents: `Generate 20 trending hashtags for: "${topic}". Return as JSON array of strings.`,
+    contents: `20 viral hashtags for: "${topic}". Return JSON array.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -117,7 +110,7 @@ export const generateHashtags = async (topic: string) => {
 
 export const generateChannelNames = async (niche: string) => {
   const response = await cloudExecute({
-    contents: `Suggest 15 creative channel names for: "${niche}". Return JSON array.`,
+    contents: `15 branding ideas for: "${niche}". Return JSON array.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -128,7 +121,7 @@ export const generateChannelNames = async (niche: string) => {
 
 export const findCompetitors = async (topic: string) => {
   const response = await cloudExecute({
-    contents: `Map competitive landscape for: "${topic}". Return JSON.`,
+    contents: `Market Analysis for: "${topic}". Return JSON array of objects: competitorType, strength, opportunity.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -149,7 +142,7 @@ export const findCompetitors = async (topic: string) => {
 
 export const generateHooks = async (topic: string) => {
   const response = await cloudExecute({
-    contents: `Generate 10 opening hooks for: "${topic}". Return as JSON array.`,
+    contents: `10 viral video hooks for: "${topic}". Return JSON array.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } }
@@ -160,7 +153,7 @@ export const generateHooks = async (topic: string) => {
 
 export const generateGrowthIdeas = async (niche: string) => {
   const response = await cloudExecute({
-    contents: `Predict 10 unique viral video ideas for "${niche}". Return JSON.`,
+    contents: `10 viral video concepts for niche: "${niche}". Return JSON array: title, viralScore, concept.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -181,7 +174,7 @@ export const generateGrowthIdeas = async (niche: string) => {
 
 export const analyzeNiche = async (niche: string) => {
   const response = await cloudExecute({
-    contents: `Analyze YouTube niche: "${niche}". Provide Competition, CPM, and Roadmap. Return JSON.`,
+    contents: `Deep Niche Analysis: "${niche}". Return JSON: competition, avgCpm, strategies (array).`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -199,7 +192,7 @@ export const analyzeNiche = async (niche: string) => {
 
 export const generateThumbnailConcepts = async (topic: string) => {
   const response = await cloudExecute({
-    contents: `Generate 5 visual concepts for thumbnails about: "${topic}". Return JSON.`,
+    contents: `5 visual concepts for thumbnails: "${topic}". Return JSON array: concept, elements, colors.`,
     config: {
       responseMimeType: "application/json",
       responseSchema: {
