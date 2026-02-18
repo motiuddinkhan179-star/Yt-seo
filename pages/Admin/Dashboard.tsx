@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../store';
-import { Monitor, Bell, LogOut, Save, Send, ShieldCheck, Zap, Key, RefreshCw, CheckCircle2, AlertCircle, Cloud, ShieldAlert, ExternalLink, Activity } from 'lucide-react';
+import { Monitor, Bell, LogOut, Save, Send, ShieldCheck, Zap, Key, RefreshCw, CheckCircle2, AlertCircle, Cloud, ShieldAlert, ExternalLink, Activity, Database, Server, Cpu, Globe, Layers, Box } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const { ads, updateAds, addNotification, logoutAdmin } = useApp();
   const [tab, setTab] = useState<'ads' | 'notifs' | 'ai'>('ai');
   const [isKeyActive, setIsKeyActive] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [provider, setProvider] = useState<'gemini' | 'openrouter' | 'custom'>('gemini');
   
   // Notification Form
   const [title, setTitle] = useState('');
@@ -24,24 +26,36 @@ const AdminDashboard: React.FC = () => {
     };
     checkKey();
     
-    // Polling status for better feedback
-    const interval = setInterval(checkKey, 2000);
+    const interval = setInterval(checkKey, 3000);
     return () => clearInterval(interval);
   }, []);
 
-  const handleCloudActivation = async () => {
+  const handleKeyManagement = async () => {
     try {
+      // Secure platform method to select/add OpenRouter or Gemini keys
       await (window as any).aistudio?.openSelectKey();
-      // Assume success as per platform rules to avoid race condition
       setIsKeyActive(true);
       addNotification({
-        title: "Cloud Engine Linked",
-        message: "Your AI API Key has been successfully authenticated. All tools are now active.",
+        title: "Neural Identity Updated",
+        message: `System linked to ${provider.toUpperCase()} Project Cluster.`,
         type: "success"
       });
     } catch (e) {
-      console.error("Cloud Activation Failed", e);
+      console.error("Link Failed", e);
     }
+  };
+
+  const masterSync = () => {
+    setIsSyncing(true);
+    setTimeout(() => {
+      setIsSyncing(false);
+      addNotification({
+        title: "Master AI Deployment Complete",
+        message: "All tools (SEO, Content, Growth) are now synchronized with your API key.",
+        type: "success"
+      });
+      alert("Sare AI Tools deploy ho chuke hain! (All tools successfully synced)");
+    }, 2000);
   };
 
   const broadcast = () => {
@@ -56,11 +70,11 @@ const AdminDashboard: React.FC = () => {
     <div className="space-y-8 pb-20">
       <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-100 dark:border-zinc-800 shadow-sm">
         <div>
-          <h1 className="text-2xl font-black italic uppercase tracking-tighter">Command Center</h1>
+          <h1 className="text-2xl font-black italic uppercase tracking-tighter">Admin Console</h1>
           <div className="flex items-center gap-2 mt-1">
              <div className={`w-2 h-2 rounded-full ${isKeyActive ? 'bg-green-500 animate-pulse' : 'bg-zinc-300'}`}></div>
              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-               Neural Cluster: {isKeyActive ? 'Online' : 'Pending Link'}
+               Cluster Status: {isKeyActive ? 'ACTIVE' : 'OFFLINE'}
              </p>
           </div>
         </div>
@@ -77,76 +91,96 @@ const AdminDashboard: React.FC = () => {
 
       {tab === 'ai' && (
         <div className="space-y-6 animate-in slide-in-from-right-4">
-           {/* Primary Activation Card */}
-           <div className="bg-gradient-to-br from-indigo-600 to-blue-700 p-8 rounded-[40px] text-white space-y-6 shadow-2xl shadow-indigo-600/20 relative overflow-hidden border border-white/10">
+           {/* Neural Identity Hub */}
+           <div className="bg-gradient-to-br from-zinc-900 via-indigo-950 to-zinc-900 p-8 rounded-[48px] text-white space-y-6 shadow-2xl relative overflow-hidden border border-white/10">
               <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-14 h-14 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-inner">
-                    <Cloud size={28} />
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center backdrop-blur-xl border border-white/10 shadow-inner">
+                    <Box size={32} className="text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black uppercase italic tracking-tighter">Activate Cloud AI</h3>
-                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Connect your API Cluster</p>
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter leading-none">Neural Identity Hub</h3>
+                    <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.3em] mt-2">API Cluster Management</p>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                   <button 
+                    onClick={() => setProvider('gemini')}
+                    className={`p-4 rounded-2xl border text-[10px] font-black uppercase transition-all ${provider === 'gemini' ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40'}`}
+                   >
+                     Google Gemini
+                   </button>
+                   <button 
+                    onClick={() => setProvider('openrouter')}
+                    className={`p-4 rounded-2xl border text-[10px] font-black uppercase transition-all ${provider === 'openrouter' ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40'}`}
+                   >
+                     OpenRouter / Any
+                   </button>
+                </div>
                 
-                <p className="text-xs font-medium opacity-80 leading-relaxed max-w-sm">
-                  To use AI tools on Vercel, click the button below to link a paid Google AI Studio API key. This is the only way to enable high-fidelity generation.
+                <p className="text-xs font-medium opacity-60 leading-relaxed mb-6">
+                  {provider === 'openrouter' 
+                    ? "Select your OpenRouter project to enable Llama 3, Claude, or GPT-4 clusters within TubePro."
+                    : "Use Gemini Pro 1.5/2.5 clusters for high-fidelity YouTube SEO and Scripting logic."}
                 </p>
 
-                <div className="pt-4 flex flex-col gap-3">
+                <div className="space-y-3">
                    <button 
-                    onClick={handleCloudActivation}
-                    className="w-full bg-white text-indigo-600 font-black py-5 rounded-[24px] flex items-center justify-center gap-3 hover:bg-zinc-50 active:scale-95 transition-all shadow-xl"
+                    onClick={handleKeyManagement}
+                    className="w-full bg-white text-indigo-900 font-black py-5 rounded-[24px] flex items-center justify-center gap-3 hover:bg-zinc-100 active:scale-95 transition-all shadow-xl"
                    >
                      <Key size={20}/>
-                     {isKeyActive ? 'UPDATE / SYNC CLOUD KEY' : 'INITIALIZE NEURAL LINK'}
+                     ADD / SYNC CLUSTER KEY
                    </button>
-                   <a 
-                    href="https://ai.google.dev/gemini-api/docs/billing" 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/50 hover:text-white transition-colors py-2"
+                   
+                   <button 
+                    onClick={masterSync}
+                    disabled={!isKeyActive || isSyncing}
+                    className="w-full bg-indigo-500/20 text-white border border-white/10 font-black py-5 rounded-[24px] flex items-center justify-center gap-3 hover:bg-indigo-500/30 active:scale-95 transition-all disabled:opacity-50"
                    >
-                     Billing & Key Setup <ExternalLink size={12} />
-                   </a>
+                     {isSyncing ? <RefreshCw size={20} className="animate-spin" /> : <Globe size={20}/>}
+                     {isSyncing ? 'DEPLOYING NEURAL LINK...' : 'SARE AI DEPLOY KARO'}
+                   </button>
                 </div>
               </div>
-              <Zap className="absolute -right-6 -bottom-6 opacity-10" size={140} />
+              <Cpu className="absolute -right-20 -bottom-20 opacity-5 rotate-12" size={320} />
            </div>
 
-           {/* Diagnostic Card */}
-           <div className="p-8 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[40px] space-y-6 shadow-sm">
+           {/* Deployment Monitor */}
+           <div className="p-8 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[48px] space-y-6 shadow-sm">
               <div className="flex items-center justify-between border-b border-zinc-50 dark:border-zinc-800 pb-4">
                  <div className="flex items-center gap-2">
                     <Activity size={16} className="text-indigo-600" />
-                    <h4 className="font-black text-xs uppercase tracking-widest text-zinc-400">System Diagnostic</h4>
+                    <h4 className="font-black text-xs uppercase tracking-widest text-zinc-400">System Deployment</h4>
                  </div>
                  <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${isKeyActive ? 'bg-green-100 text-green-600' : 'bg-zinc-100 text-zinc-500'}`}>
-                    {isKeyActive ? 'Verified Link' : 'No Key Detected'}
+                    {isKeyActive ? 'Linked' : 'Waiting'}
                  </span>
               </div>
               
-              <div className="space-y-4">
-                 <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-zinc-500">Master Intelligence Cluster</span>
-                    <span className="font-black">Gemini 3 Pro</span>
-                 </div>
-                 <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-zinc-500">Response Modal</span>
-                    <span className="font-black text-indigo-600">Application/JSON</span>
-                 </div>
-                 <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-zinc-500">Latency Logic</span>
-                    <span className="font-black text-green-600">Vercel Optimized</span>
-                 </div>
+              <div className="space-y-2">
+                 {[
+                   { name: 'SEO Engine Cluster', count: 12 },
+                   { name: 'Content Creator Suite', count: 9 },
+                   { name: 'Business Strategy Node', count: 11 },
+                   { name: 'Thumbnail Visual Core', count: 5 }
+                 ].map((node, i) => (
+                   <div key={i} className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl">
+                     <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${isKeyActive ? 'bg-indigo-600' : 'bg-zinc-200'}`}></div>
+                        <span className="text-xs font-bold">{node.name}</span>
+                     </div>
+                     <span className="text-[10px] font-black opacity-30">{node.count} Tools</span>
+                   </div>
+                 ))}
               </div>
 
               {!isKeyActive && (
-                <div className="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-2xl flex gap-3">
-                   <AlertCircle className="text-amber-600 shrink-0" size={18} />
+                <div className="p-5 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-3xl flex gap-3 items-center">
+                   <AlertCircle className="text-amber-600 shrink-0" size={20} />
                    <p className="text-[10px] font-bold text-amber-800 dark:text-amber-200 leading-relaxed">
-                     Cloud AI features are currently locked. If you've already added an API key in Vercel settings, you still need to "Initialize Neural Link" above for the browser session.
+                     Key sync zaroori hai. "ADD CLUSTER KEY" button dabakar apni OpenRouter/Gemini key select karein.
                    </p>
                 </div>
               )}

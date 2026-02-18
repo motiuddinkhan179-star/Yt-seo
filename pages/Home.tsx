@@ -1,11 +1,25 @@
 
-import React from 'react';
-import { Menu, Star, ChevronRight, Cloud, Zap, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Menu, Star, ChevronRight, Cloud, Zap, ShieldCheck, Activity } from 'lucide-react';
 import AdSlot from '../components/AdSlot';
 import { AppRoute } from '../types';
 import { TOOL_GRID } from '../constants';
 
 const Home: React.FC<{ onNavigate: (r: AppRoute) => void }> = ({ onNavigate }) => {
+  const [isCloudActive, setIsCloudActive] = useState(false);
+
+  useEffect(() => {
+    const checkCloud = async () => {
+      try {
+        const active = await (window as any).aistudio?.hasSelectedApiKey();
+        setIsCloudActive(!!active);
+      } catch (e) {
+        setIsCloudActive(false);
+      }
+    };
+    checkCloud();
+  }, []);
+
   return (
     <div className="space-y-6 pb-24">
       {/* App Header Bar */}
@@ -17,9 +31,11 @@ const Home: React.FC<{ onNavigate: (r: AppRoute) => void }> = ({ onNavigate }) =
              <div className="bg-zinc-800 dark:bg-zinc-200 dark:text-zinc-900 text-white px-2 py-0.5 rounded font-black text-xs">AI</div>
           </div>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1 bg-green-50 dark:bg-green-900/10 rounded-full border border-green-100 dark:border-green-900/30">
-          <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-          <span className="text-[9px] font-black uppercase text-green-600">Active Node: C11238</span>
+        <div className={`flex items-center gap-2 px-3 py-1 rounded-full border transition-all ${isCloudActive ? 'bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-900/30' : 'bg-zinc-100 dark:bg-zinc-800 border-transparent opacity-60'}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${isCloudActive ? 'bg-green-500 animate-pulse' : 'bg-zinc-400'}`}></span>
+          <span className={`text-[9px] font-black uppercase ${isCloudActive ? 'text-green-600' : 'text-zinc-500'}`}>
+            {isCloudActive ? 'Cluster Active: C11238' : 'Cluster Offline'}
+          </span>
         </div>
       </div>
 
@@ -41,7 +57,10 @@ const Home: React.FC<{ onNavigate: (r: AppRoute) => void }> = ({ onNavigate }) =
       <section>
         <div className="flex items-center justify-between mb-4 px-1">
           <h2 className="text-lg font-black tracking-tight">AI Master Suite</h2>
-          <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Cluster Node Active</span>
+          <div className="flex items-center gap-2">
+            <Activity size={12} className="text-indigo-600" />
+            <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Global Sync Ready</span>
+          </div>
         </div>
         
         {/* The Grid */}
