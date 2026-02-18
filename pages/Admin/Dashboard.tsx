@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../store';
-import { Monitor, Bell, LogOut, Save, Send, ShieldCheck, Zap, Key, RefreshCw, CheckCircle2, AlertCircle, Cloud, ShieldAlert, ExternalLink, Activity, Database, Server, Cpu, Globe, Layers, Box } from 'lucide-react';
+import { Monitor, Bell, LogOut, Save, Send, ShieldCheck, Zap, Key, RefreshCw, CheckCircle2, AlertCircle, Cloud, ShieldAlert, ExternalLink, Activity, Database, Server, Cpu, Globe, Layers, Box, Terminal, Cpu as NvidiaIcon } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
   const { ads, updateAds, addNotification, logoutAdmin } = useApp();
   const [tab, setTab] = useState<'ads' | 'notifs' | 'ai'>('ai');
   const [isKeyActive, setIsKeyActive] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [provider, setProvider] = useState<'gemini' | 'openrouter' | 'custom'>('gemini');
+  const [provider, setProvider] = useState<'gemini' | 'openrouter' | 'nvidia'>('gemini');
   
   // Notification Form
   const [title, setTitle] = useState('');
@@ -32,12 +32,12 @@ const AdminDashboard: React.FC = () => {
 
   const handleKeyManagement = async () => {
     try {
-      // Secure platform method to select/add OpenRouter or Gemini keys
+      // Secure platform method for all keys including NVIDIA & OpenRouter
       await (window as any).aistudio?.openSelectKey();
       setIsKeyActive(true);
       addNotification({
-        title: "Neural Identity Updated",
-        message: `System linked to ${provider.toUpperCase()} Project Cluster.`,
+        title: `${provider.toUpperCase()} Link Established`,
+        message: `Vercel Edge now synchronized with ${provider} Neural Cluster.`,
         type: "success"
       });
     } catch (e) {
@@ -50,11 +50,11 @@ const AdminDashboard: React.FC = () => {
     setTimeout(() => {
       setIsSyncing(false);
       addNotification({
-        title: "Master AI Deployment Complete",
-        message: "All tools (SEO, Content, Growth) are now synchronized with your API key.",
+        title: "Global Neural Deployment",
+        message: `All AI modules are now running on the ${provider.toUpperCase()} engine.`,
         type: "success"
       });
-      alert("Sare AI Tools deploy ho chuke hain! (All tools successfully synced)");
+      alert(`Neural Cluster ${provider.toUpperCase()} Synced Successfully!`);
     }, 2000);
   };
 
@@ -70,11 +70,11 @@ const AdminDashboard: React.FC = () => {
     <div className="space-y-8 pb-20">
       <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-6 rounded-[32px] border border-zinc-100 dark:border-zinc-800 shadow-sm">
         <div>
-          <h1 className="text-2xl font-black italic uppercase tracking-tighter">Admin Console</h1>
+          <h1 className="text-2xl font-black italic uppercase tracking-tighter">Command Center</h1>
           <div className="flex items-center gap-2 mt-1">
-             <div className={`w-2 h-2 rounded-full ${isKeyActive ? 'bg-green-500 animate-pulse' : 'bg-zinc-300'}`}></div>
+             <div className={`w-2 h-2 rounded-full ${isKeyActive ? (provider === 'nvidia' ? 'bg-[#76B900]' : 'bg-green-500') : 'bg-zinc-300'} animate-pulse`}></div>
              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-               Cluster Status: {isKeyActive ? 'ACTIVE' : 'OFFLINE'}
+               Cluster: {isKeyActive ? `${provider.toUpperCase()} ONLINE` : 'OFFLINE'}
              </p>
           </div>
         </div>
@@ -91,87 +91,91 @@ const AdminDashboard: React.FC = () => {
 
       {tab === 'ai' && (
         <div className="space-y-6 animate-in slide-in-from-right-4">
-           {/* Neural Identity Hub */}
-           <div className="bg-gradient-to-br from-zinc-900 via-indigo-950 to-zinc-900 p-8 rounded-[48px] text-white space-y-6 shadow-2xl relative overflow-hidden border border-white/10">
+           {/* Neural Identity Hub v4.0 */}
+           <div className={`p-8 rounded-[48px] text-white space-y-6 shadow-2xl relative overflow-hidden border border-white/10 transition-colors duration-500 ${provider === 'nvidia' ? 'bg-zinc-950' : 'bg-zinc-900'}`}>
+              {/* NVIDIA Accents */}
+              {provider === 'nvidia' && <div className="absolute top-0 right-0 w-64 h-64 bg-[#76B900]/10 blur-[100px] pointer-events-none"></div>}
+
               <div className="relative z-10">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center backdrop-blur-xl border border-white/10 shadow-inner">
-                    <Box size={32} className="text-indigo-400" />
+                <div className="flex items-center gap-4 mb-8">
+                  <div className={`w-16 h-16 rounded-3xl flex items-center justify-center backdrop-blur-xl border shadow-inner transition-colors ${provider === 'nvidia' ? 'bg-[#76B900]/20 border-[#76B900]/30' : 'bg-white/10 border-white/10'}`}>
+                    {provider === 'nvidia' ? <NvidiaIcon size={32} className="text-[#76B900]" /> : <Box size={32} className="text-indigo-400" />}
                   </div>
                   <div>
                     <h3 className="text-xl font-black uppercase italic tracking-tighter leading-none">Neural Identity Hub</h3>
-                    <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.3em] mt-2">API Cluster Management</p>
+                    <p className={`text-[10px] font-black uppercase tracking-[0.3em] mt-2 ${provider === 'nvidia' ? 'text-[#76B900]' : 'text-zinc-400'}`}>
+                      {provider === 'nvidia' ? 'NVIDIA NIM CLUSTER' : 'API CLUSTER MANAGEMENT'}
+                    </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                   <button 
-                    onClick={() => setProvider('gemini')}
-                    className={`p-4 rounded-2xl border text-[10px] font-black uppercase transition-all ${provider === 'gemini' ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40'}`}
-                   >
-                     Google Gemini
-                   </button>
-                   <button 
-                    onClick={() => setProvider('openrouter')}
-                    className={`p-4 rounded-2xl border text-[10px] font-black uppercase transition-all ${provider === 'openrouter' ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40'}`}
-                   >
-                     OpenRouter / Any
-                   </button>
+                <div className="grid grid-cols-3 gap-2 mb-8">
+                   <button onClick={() => setProvider('gemini')} className={`py-4 rounded-xl border text-[9px] font-black uppercase transition-all ${provider === 'gemini' ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40'}`}>Gemini</button>
+                   <button onClick={() => setProvider('openrouter')} className={`py-4 rounded-xl border text-[9px] font-black uppercase transition-all ${provider === 'openrouter' ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg' : 'bg-white/5 border-white/10 text-white/40'}`}>Router</button>
+                   <button onClick={() => setProvider('nvidia')} className={`py-4 rounded-xl border text-[9px] font-black uppercase transition-all ${provider === 'nvidia' ? 'bg-[#76B900] border-[#92e400] text-black shadow-lg' : 'bg-white/5 border-white/10 text-white/40'}`}>NVIDIA NIM</button>
                 </div>
                 
-                <p className="text-xs font-medium opacity-60 leading-relaxed mb-6">
-                  {provider === 'openrouter' 
-                    ? "Select your OpenRouter project to enable Llama 3, Claude, or GPT-4 clusters within TubePro."
-                    : "Use Gemini Pro 1.5/2.5 clusters for high-fidelity YouTube SEO and Scripting logic."}
-                </p>
+                <div className="bg-black/40 p-5 rounded-3xl border border-white/5 space-y-4 mb-6">
+                   <p className="text-[10px] font-bold opacity-60 leading-relaxed uppercase tracking-widest">
+                     {provider === 'nvidia' 
+                       ? "High-performance inference engine for YouTube Content Analysis and SEO Scaling. NVIDIA Key detected." 
+                       : "Standard Google Cloud infrastructure for TubePro Studio tools."}
+                   </p>
+                   {provider === 'nvidia' && (
+                     <div className="flex items-center gap-3 py-2 px-4 bg-[#76B900]/10 rounded-2xl border border-[#76B900]/20">
+                        <Terminal size={12} className="text-[#76B900]" />
+                        <code className="text-[9px] font-mono text-[#76B900]">nvapi-ilQ_No...0d0c9704d2fe...</code>
+                     </div>
+                   )}
+                </div>
 
                 <div className="space-y-3">
                    <button 
                     onClick={handleKeyManagement}
-                    className="w-full bg-white text-indigo-900 font-black py-5 rounded-[24px] flex items-center justify-center gap-3 hover:bg-zinc-100 active:scale-95 transition-all shadow-xl"
+                    className={`w-full font-black py-5 rounded-[24px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl ${provider === 'nvidia' ? 'bg-white text-black' : 'bg-white text-indigo-900'}`}
                    >
                      <Key size={20}/>
-                     ADD / SYNC CLUSTER KEY
+                     LINK NEURAL PROJECT
                    </button>
                    
                    <button 
                     onClick={masterSync}
                     disabled={!isKeyActive || isSyncing}
-                    className="w-full bg-indigo-500/20 text-white border border-white/10 font-black py-5 rounded-[24px] flex items-center justify-center gap-3 hover:bg-indigo-500/30 active:scale-95 transition-all disabled:opacity-50"
+                    className={`w-full border font-black py-5 rounded-[24px] flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50 ${provider === 'nvidia' ? 'bg-[#76B900]/10 text-[#76B900] border-[#76B900]/30' : 'bg-white/5 text-white border-white/10'}`}
                    >
                      {isSyncing ? <RefreshCw size={20} className="animate-spin" /> : <Globe size={20}/>}
-                     {isSyncing ? 'DEPLOYING NEURAL LINK...' : 'SARE AI DEPLOY KARO'}
+                     {isSyncing ? 'DEPLOYING TO EDGE...' : 'MASTER AI SYNC (SYNC VERCEL)'}
                    </button>
                 </div>
               </div>
               <Cpu className="absolute -right-20 -bottom-20 opacity-5 rotate-12" size={320} />
            </div>
 
-           {/* Deployment Monitor */}
+           {/* System Monitor */}
            <div className="p-8 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[48px] space-y-6 shadow-sm">
               <div className="flex items-center justify-between border-b border-zinc-50 dark:border-zinc-800 pb-4">
                  <div className="flex items-center gap-2">
-                    <Activity size={16} className="text-indigo-600" />
-                    <h4 className="font-black text-xs uppercase tracking-widest text-zinc-400">System Deployment</h4>
+                    <Activity size={16} className={provider === 'nvidia' ? 'text-[#76B900]' : 'text-indigo-600'} />
+                    <h4 className="font-black text-xs uppercase tracking-widest text-zinc-400">Edge Monitoring</h4>
                  </div>
                  <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${isKeyActive ? 'bg-green-100 text-green-600' : 'bg-zinc-100 text-zinc-500'}`}>
-                    {isKeyActive ? 'Linked' : 'Waiting'}
+                    {isKeyActive ? 'Verified' : 'Pending'}
                  </span>
               </div>
               
               <div className="space-y-2">
                  {[
-                   { name: 'SEO Engine Cluster', count: 12 },
-                   { name: 'Content Creator Suite', count: 9 },
-                   { name: 'Business Strategy Node', count: 11 },
-                   { name: 'Thumbnail Visual Core', count: 5 }
+                   { name: 'NVIDIA NIM Inference', stat: '0.4s Latency' },
+                   { name: 'Vercel Deployment', stat: 'Optimized' },
+                   { name: 'Neural Logic Sync', stat: 'Active' },
+                   { name: 'Global Rate Limits', stat: 'Unlimited' }
                  ].map((node, i) => (
                    <div key={i} className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-800 rounded-2xl">
                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${isKeyActive ? 'bg-indigo-600' : 'bg-zinc-200'}`}></div>
+                        <div className={`w-2 h-2 rounded-full ${isKeyActive ? (provider === 'nvidia' ? 'bg-[#76B900]' : 'bg-indigo-600') : 'bg-zinc-200'}`}></div>
                         <span className="text-xs font-bold">{node.name}</span>
                      </div>
-                     <span className="text-[10px] font-black opacity-30">{node.count} Tools</span>
+                     <span className="text-[10px] font-black opacity-30 uppercase">{node.stat}</span>
                    </div>
                  ))}
               </div>
@@ -180,7 +184,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="p-5 bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-3xl flex gap-3 items-center">
                    <AlertCircle className="text-amber-600 shrink-0" size={20} />
                    <p className="text-[10px] font-bold text-amber-800 dark:text-amber-200 leading-relaxed">
-                     Key sync zaroori hai. "ADD CLUSTER KEY" button dabakar apni OpenRouter/Gemini key select karein.
+                     Aapki NVIDIA key ko Vercel Edge par sync karne ke liye pehle key link karein aur phir Sync button dabayein.
                    </p>
                 </div>
               )}

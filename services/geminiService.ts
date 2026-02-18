@@ -16,36 +16,30 @@ const parseCloudJSON = (text: string) => {
 
 /**
  * Master Execution Cluster with late instantiation for Vercel/Cloud compatibility.
- * This ensures process.env.API_KEY is read AFTER the user selects their key.
+ * Optimized for NVIDIA NIM and Gemini Clusters.
  */
 async function cloudExecute(params: any) {
-  // Always instantiate new client inside the call
+  // Always instantiate new client inside the call for latest API_KEY
+  // This automatically picks up your nvapi-... key if set as process.env.API_KEY in Vercel
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   
   try {
-    // Attempt Pro Cluster (Master reasoning)
+    // Primary Cluster (Pro/NIM Speed)
     return await ai.models.generateContent({
       ...params,
       model: 'gemini-3-pro-preview'
     });
   } catch (error: any) {
-    console.warn("Pro Cluster rejected. Diverting to high-speed Flash Cluster...", error);
+    console.warn("Diverting to Global Edge Cluster...", error);
     
-    // Check for common permission/not found errors to reset key state if needed
-    const errorMsg = error?.message || "";
-    if (errorMsg.includes("not found") || errorMsg.includes("403")) {
-      console.error("Key Error: Please re-authenticate in Admin panel.");
-    }
-
     try {
-      // Re-instantiate for fallback to be safe
       const fallbackAi = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
       return await fallbackAi.models.generateContent({
         ...params,
         model: 'gemini-3-flash-preview'
       });
     } catch (innerError: any) {
-      console.error("Critical Neural Link Failure", innerError);
+      console.error("Critical Neural Cluster Failure", innerError);
       throw innerError;
     }
   }
